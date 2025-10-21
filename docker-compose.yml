@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./Back
+      dockerfile: Dockerfile
+    container_name: chatbot_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./Back:/app
+      - ./Back/data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:///./chatbot.db
+      - RAG_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+      - RAG_DEFAULT_CHUNK_SIZE=1000
+      - RAG_DEFAULT_CHUNK_OVERLAP=200
+    restart: unless-stopped
+    networks:
+      - chatbot_network
+
+  frontend:
+    build:
+      context: ./Front
+      dockerfile: Dockerfile
+    container_name: chatbot_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Front:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    restart: unless-stopped
+    networks:
+      - chatbot_network
+
+networks:
+  chatbot_network:
+    driver: bridge
+
+volumes:
+  data:

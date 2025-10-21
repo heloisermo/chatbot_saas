@@ -4,3 +4,11 @@ sqlalchemy
 psycopg2-binary
 pydantic
 passlib[bcrypt]
+# RAG Dependencies
+langchain
+langchain-community
+faiss-cpu
+sentence-transformers
+pypdf
+python-multipart
+tiktoken

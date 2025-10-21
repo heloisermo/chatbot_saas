@@ -1,0 +1,54 @@
+# Guide de Démarrage Rapide - Système RAG
+
+## Introduction
+
+Bienvenue dans notre système de Retrieval-Augmented Generation (RAG).
+Ce document vous guidera à travers les fonctionnalités principales du système.
+
+## Qu'est-ce que le RAG ?
+
+Le RAG (Retrieval-Augmented Generation) est une technique qui combine :
+- La recherche d'informations dans une base de connaissances
+- La génération de réponses avec un modèle de langage
+
+Cette approche permet de créer des chatbots qui peuvent répondre aux questions
+en se basant sur vos propres documents.
+
+## Fonctionnalités Principales
+
+### 1. Indexation de Documents
+Le système peut indexer plusieurs types de documents :
+- Fichiers PDF
+- Fichiers texte (.txt)
+- Fichiers Markdown (.md)
+
+Les documents sont découpés en morceaux (chunks) pour optimiser la recherche.
+
+### 2. Recherche Sémantique
+Contrairement à la recherche par mots-clés, la recherche sémantique comprend
+le sens de votre requête. Elle peut trouver des informations pertinentes même
+si les mots exacts ne sont pas présents dans le document.
+
+### 3. Embeddings
+Le système utilise des embeddings pour représenter le texte sous forme de vecteurs.
+Le modèle par défaut est "all-MiniLM-L6-v2" qui offre un bon équilibre entre
+performance et qualité.
+
+## Comment Utiliser
+
+1. Uploadez vos documents via l'API
+2. Le système les indexe automatiquement
+3. Posez vos questions
+4. Recevez des réponses basées sur vos documents
+
+## Avantages
+
+- Réponses précises basées sur vos propres données
+- Pas besoin de réentraîner un modèle
+- Mise à jour facile en ajoutant de nouveaux documents
+- Recherche rapide grâce à FAISS
+
+## Conclusion
+
+Ce système vous permet de créer facilement un assistant IA personnalisé
+qui répond aux questions en utilisant vos propres documents.
