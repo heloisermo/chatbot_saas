@@ -1,14 +1,15 @@
 """
 Routes API pour la gestion des documents et du RAG
 """
-from fastapi import APIRouter, UploadFile, File, HTTPException, Form
+from fastapi import APIRouter, UploadFile, File, HTTPException, Form, Body
 from fastapi.responses import JSONResponse
-from typing import Optional
+from typing import Optional, List, Dict
 import os
 import shutil
 from pathlib import Path
 
 from app.services.document_indexer import DocumentIndexer
+from app.services.rag_service import RAGService
 from app.config import config
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -18,6 +19,13 @@ indexer = DocumentIndexer(
     index_path=config.index_path,
     embedding_model=config.embedding_model
 )
+
+# Instance globale du service RAG
+try:
+    rag_service = RAGService(indexer)
+except ValueError as e:
+    print(f"⚠️  Service RAG non initialisé: {e}")
+    rag_service = None
 
 
 @router.post("/upload")
@@ -210,5 +218,59 @@ async def get_config():
         "default_chunk_overlap": config.default_chunk_overlap,
         "default_k_results": config.default_k_results,
         "allowed_extensions": config.allowed_extensions,
-        "max_file_size_mb": config.max_file_size_mb
+        "max_file_size_mb": config.max_file_size_mb,
+        "llm_enabled": rag_service is not None,
+        "mistral_model": config.mistral_model if rag_service else None
     }
+
+
+@router.post("/query")
+async def query_documents(
+    question: str = Form(...),
+    k: int = Form(config.default_k_results),
+    system_prompt: Optional[str] = Form(None)
+):
+    """
+    Pose une question sur les documents indexés avec RAG
+    
+    Args:
+        question: Question à poser
+        k: Nombre de documents à récupérer pour le contexte
+        system_prompt: Prompt système personnalisé (optionnel)
+    """
+    if not rag_service:
+        raise HTTPException(
+            status_code=503,
+            detail="Service RAG non disponible. Vérifiez la configuration de MISTRAL_API_KEY."
+        )
+    
+    try:
+        result = rag_service.query(question, k=k, system_prompt=system_prompt)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la requête: {str(e)}")
+
+
+@router.post("/chat")
+async def chat_with_documents(
+    messages: List[Dict[str, str]] = Body(...),
+    k: int = Body(config.default_k_results)
+):
+    """
+    Conversation avec les documents indexés
+    
+    Args:
+        messages: Liste de messages [{role: "user/assistant", content: "..."}]
+        k: Nombre de documents à récupérer pour le contexte
+    """
+    if not rag_service:
+        raise HTTPException(
+            status_code=503,
+            detail="Service RAG non disponible. Vérifiez la configuration de MISTRAL_API_KEY."
+        )
+    
+    try:
+        result = rag_service.chat(messages, k=k)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors du chat: {str(e)}")

@@ -65,17 +65,20 @@ dist-ssr/
 *.swp
 *.swo
 *~
-.DS_Store
 
-# Environment variables
+# Environment variables - IMPORTANT
 .env
 .env.local
 .env.*.local
+Back/.env
+Front/.env
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Logs
 *.log
 
 # Docker
-*.log
+docker-compose.override.yml

@@ -11,11 +11,8 @@ services:
     volumes:
       - ./Back:/app
       - ./Back/data:/app/data
-    environment:
-      - DATABASE_URL=sqlite:///./chatbot.db
-      - RAG_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
-      - RAG_DEFAULT_CHUNK_SIZE=1000
-      - RAG_DEFAULT_CHUNK_OVERLAP=200
+    env_file:
+      - .env
     restart: unless-stopped
     networks:
       - chatbot_network
