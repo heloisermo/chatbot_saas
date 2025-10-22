@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import './PublicChatbot.css'
 
 function PublicChatbot({ shareToken }) {
@@ -36,12 +38,20 @@ function PublicChatbot({ shareToken }) {
 
     try {
       console.log('Envoi de la question:', userMessage.content)
+      
+      // Préparer l'historique (garder les 4 derniers messages = 2 échanges)
+      const recentMessages = messages.slice(-4)
+      
       const response = await fetch(`/chatbots/public/${shareToken}/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question: userMessage.content, k: 4 })
+        body: JSON.stringify({ 
+          question: userMessage.content, 
+          k: 4,
+          conversation_history: recentMessages
+        })
       })
 
       console.log('Response status:', response.status)
@@ -159,14 +169,22 @@ function PublicChatbot({ shareToken }) {
                   {msg.role === 'user' ? '👤' : '🤖'}
                 </div>
                 <div className="message-content">
-                  <div className="message-text">{msg.content}</div>
+                  <div className="message-text">
+                    {msg.role === 'assistant' ? (
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {msg.content}
+                      </ReactMarkdown>
+                    ) : (
+                      msg.content
+                    )}
+                  </div>
                   {msg.sources && msg.sources.length > 0 && (
                     <div className="message-sources">
                       <strong>📚 Sources:</strong>
                       <ul>
                         {msg.sources.map((source, idx) => (
                           <li key={idx}>
-                            {source.filename} - Page {source.page || 'N/A'}
+                            {source.metadata?.filename || source.filename} - Page {source.metadata?.page || source.page || 'N/A'}
                           </li>
                         ))}
                       </ul>

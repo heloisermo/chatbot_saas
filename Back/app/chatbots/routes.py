@@ -479,7 +479,8 @@ async def query_chatbot_stream(
         response_stream, sources = rag_service.query_stream(
             query_data.question,
             k=query_data.k,
-            system_prompt=chatbot.get("system_prompt")
+            system_prompt=chatbot.get("system_prompt"),
+            conversation_history=query_data.conversation_history
         )
         
         # Envoyer d'abord les sources
@@ -642,23 +643,51 @@ async def query_public_chatbot(
     async def event_generator():
         try:
             answer_chunks = []
+            full_answer = ""
             
             # Obtenir le stream et les sources
             response_stream, sources = rag_service.query_stream(
                 query_request.question,
                 k=query_request.k,
-                system_prompt=chatbot.get("system_prompt")
+                system_prompt=chatbot.get("system_prompt"),
+                conversation_history=query_request.conversation_history
             )
             
             # Stream la réponse
             for chunk in response_stream:
                 if chunk:
                     answer_chunks.append(chunk)
+                    full_answer += chunk
                     yield f"data: {json.dumps({'type': 'answer', 'content': chunk})}\n\n"
             
             # Envoyer les sources
             yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
             yield "data: [DONE]\n\n"
+            
+            # Sauvegarder la conversation (public - sans user_id)
+            try:
+                conversation_entry = {
+                    "chatbot_id": chatbot_id,
+                    "user_id": None,  # Conversation publique
+                    "is_public": True,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": query_request.question,
+                            "timestamp": datetime.now()
+                        },
+                        {
+                            "role": "assistant",
+                            "content": full_answer,
+                            "timestamp": datetime.now(),
+                            "sources": sources
+                        }
+                    ],
+                    "created_at": datetime.now()
+                }
+                await conversations_collection.insert_one(conversation_entry)
+            except Exception as e:
+                print(f"Erreur lors de la sauvegarde de la conversation publique: {e}")
             
         except Exception as e:
             error_message = f"Erreur: {str(e)}"

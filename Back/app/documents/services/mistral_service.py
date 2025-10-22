@@ -37,7 +37,7 @@ Réponse:""",
             input_variables=["system_prompt", "context", "question"]
         )
     
-    def generate_response_stream(self, context: str, question: str, system_prompt: str = None) -> Iterator[str]:
+    def generate_response_stream(self, context: str, question: str, system_prompt: str = None, conversation_history: List[Dict] = None) -> Iterator[str]:
         """
         Génère une réponse en streaming basée sur le contexte et la question
         
@@ -45,6 +45,7 @@ Réponse:""",
             context: Contexte extrait des documents
             question: Question de l'utilisateur
             system_prompt: Prompt système personnalisé (optionnel)
+            conversation_history: Historique de conversation (optionnel) - Limité aux 3 derniers échanges
             
         Yields:
             Chunks de la réponse générée par le LLM
@@ -52,14 +53,43 @@ Réponse:""",
         # Utiliser le prompt personnalisé ou celui par défaut
         prompt_to_use = system_prompt if system_prompt else config.system_prompt
         
-        # Générer le prompt
-        prompt = self.prompt_template.format(
-            system_prompt=prompt_to_use,
-            context=context,
-            question=question
-        )
+        # Construire l'historique si présent (limité aux 2-3 derniers échanges)
+        history_text = ""
+        if conversation_history and len(conversation_history) > 0:
+            # Garder seulement les 4 derniers messages (2 échanges)
+            recent_history = conversation_history[-4:] if len(conversation_history) > 4 else conversation_history
+            
+            history_parts = []
+            for msg in recent_history:
+                role = "Utilisateur" if msg.get("role") == "user" else "Assistant"
+                content = msg.get("content", "")
+                # Limiter la longueur de chaque message à 500 caractères pour ne pas surcharger
+                if len(content) > 500:
+                    content = content[:500] + "..."
+                history_parts.append(f"{role}: {content}")
+            
+            if history_parts:
+                history_text = "\n\nHistorique récent de la conversation:\n" + "\n".join(history_parts)
         
-        for chunk in self.llm.stream(prompt):
+        # Générer le prompt avec ou sans historique
+        if history_text:
+            full_prompt = f"""{prompt_to_use}
+
+Contexte des documents:
+{context}
+{history_text}
+
+Question actuelle: {question}
+
+Réponse:"""
+        else:
+            full_prompt = self.prompt_template.format(
+                system_prompt=prompt_to_use,
+                context=context,
+                question=question
+            )
+        
+        for chunk in self.llm.stream(full_prompt):
             if hasattr(chunk, 'content') and chunk.content:
                 yield chunk.content
     

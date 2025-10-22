@@ -175,6 +175,65 @@
   word-wrap: break-word;
 }
 
+/* Styles Markdown pour le widget */
+.widget-message-bubble h1, .widget-message-bubble h2, 
+.widget-message-bubble h3, .widget-message-bubble h4 {
+  margin: 0.5rem 0 0.25rem 0;
+  font-weight: 600;
+}
+
+.widget-message-bubble h1 { font-size: 1.1rem; }
+.widget-message-bubble h2 { font-size: 1rem; }
+.widget-message-bubble h3 { font-size: 0.95rem; }
+
+.widget-message-bubble p {
+  margin: 0.25rem 0;
+}
+
+.widget-message-bubble code {
+  background: rgba(0, 0, 0, 0.1);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+}
+
+.widget-message-bubble pre {
+  background: rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 0.25rem 0;
+  font-size: 0.85em;
+}
+
+.widget-message-bubble pre code {
+  background: none;
+  padding: 0;
+}
+
+.widget-message-bubble ul, .widget-message-bubble ol {
+  margin: 0.25rem 0;
+  padding-left: 1.2rem;
+}
+
+.widget-message-bubble li {
+  margin: 0.1rem 0;
+}
+
+.widget-message-bubble strong {
+  font-weight: 600;
+}
+
+.widget-message-bubble em {
+  font-style: italic;
+}
+
+.widget-message-bubble a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .widget-message.user {
   flex-direction: row-reverse;
 }

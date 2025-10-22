@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import './ChatbotWidget.css'
 
 function ChatbotWidget({ shareToken }) {
@@ -35,12 +37,19 @@ function ChatbotWidget({ shareToken }) {
     setIsAsking(true)
 
     try {
+      // Préparer l'historique (garder les 4 derniers messages = 2 échanges)
+      const recentMessages = messages.slice(-4)
+      
       const response = await fetch(`/chatbots/public/${shareToken}/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question: userMessage.content, k: 4 })
+        body: JSON.stringify({ 
+          question: userMessage.content, 
+          k: 4,
+          conversation_history: recentMessages
+        })
       })
 
       if (!response.ok) throw new Error('Erreur')
@@ -142,7 +151,13 @@ function ChatbotWidget({ shareToken }) {
                     {msg.role === 'user' ? '👤' : '🤖'}
                   </div>
                   <div className="widget-message-bubble">
-                    {msg.content}
+                    {msg.role === 'assistant' ? (
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {msg.content}
+                      </ReactMarkdown>
+                    ) : (
+                      msg.content
+                    )}
                   </div>
                 </div>
               ))

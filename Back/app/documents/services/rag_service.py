@@ -100,7 +100,7 @@ class RAGService:
         # Utiliser la méthode query standard
         return self.query(last_question, k=k)
     
-    def query_stream(self, question: str, k: int = 4, system_prompt: str = None) -> Tuple[Iterator[str], List[Dict]]:
+    def query_stream(self, question: str, k: int = 4, system_prompt: str = None, conversation_history: List[Dict] = None) -> Tuple[Iterator[str], List[Dict]]:
         """
         Effectue une requête RAG avec streaming de la réponse
         
@@ -108,6 +108,7 @@ class RAGService:
             question: Question de l'utilisateur
             k: Nombre de documents à récupérer
             system_prompt: Prompt système personnalisé (optionnel)
+            conversation_history: Historique de conversation (optionnel) - Liste de {role, content}
             
         Returns:
             Tuple (Iterator de chunks de réponse, Liste des sources)
@@ -128,7 +129,7 @@ class RAGService:
                 yield "Je n'ai pas trouvé d'informations pertinentes dans les documents indexés."
             return no_docs_stream(), sources
         
-        # Préparer le contexte
+        # Préparer le contexte des documents
         context = "\n\n".join([
             f"Document {i+1}:\n{doc.page_content}" 
             for i, (doc, _) in enumerate(docs_with_scores)
@@ -143,7 +144,12 @@ class RAGService:
                 "index": i + 1
             })
         
-        # Stream la réponse du LLM via Mistral
-        response_stream = self.mistral.generate_response_stream(context, question, system_prompt=system_prompt)
+        # Stream la réponse du LLM via Mistral avec l'historique
+        response_stream = self.mistral.generate_response_stream(
+            context, 
+            question, 
+            system_prompt=system_prompt,
+            conversation_history=conversation_history
+        )
         
         return response_stream, sources

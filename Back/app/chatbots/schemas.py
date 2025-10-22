@@ -54,6 +54,7 @@ class ChatbotQueryRequest(BaseModel):
     """Requête pour interroger un chatbot"""
     question: str = Field(..., min_length=1)
     k: int = Field(default=4, ge=1, le=10)
+    conversation_history: Optional[List[dict]] = Field(default=None, max_length=10)
 
 
 class ChatbotQueryResponse(BaseModel):

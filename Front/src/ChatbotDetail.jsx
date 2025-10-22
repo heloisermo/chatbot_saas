@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import './ChatbotDetail.css'
 
 function ChatbotDetail({ chatbot, onBack, onUpdate }) {
@@ -104,6 +106,13 @@ function ChatbotDetail({ chatbot, onBack, onUpdate }) {
 
     try {
       const token = localStorage.getItem('token')
+      
+      // Préparer l'historique (garder les 4 derniers messages = 2 échanges)
+      const recentMessages = chatMessages.slice(-4).map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }))
+      
       const response = await fetch(`/chatbots/${chatbot.id}/query/stream`, {
         method: 'POST',
         headers: {
@@ -112,7 +121,8 @@ function ChatbotDetail({ chatbot, onBack, onUpdate }) {
         },
         body: JSON.stringify({
           question: currentQuestion,
-          k: 4
+          k: 4,
+          conversation_history: recentMessages
         })
       })
 
@@ -256,7 +266,13 @@ function ChatbotDetail({ chatbot, onBack, onUpdate }) {
                   {chatMessages.map((msg, idx) => (
                     <div key={idx} className={`chat-message ${msg.role} ${chatLoading && idx === chatMessages.length - 1 && msg.role === 'assistant' ? 'streaming' : ''}`}>
                       <div className="message-content">
-                        {msg.content}
+                        {msg.role === 'assistant' ? (
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                        ) : (
+                          msg.content
+                        )}
                         {chatLoading && idx === chatMessages.length - 1 && msg.role === 'assistant' && (
                           <span className="typing-cursor"></span>
                         )}
@@ -451,7 +467,13 @@ function ChatbotDetail({ chatbot, onBack, onUpdate }) {
                     {conv.messages.map((msg, midx) => (
                       <div key={midx} className={`conv-message ${msg.role}`}>
                         <strong>{msg.role === 'user' ? '👤 Vous' : '🤖 Assistant'}:</strong>
-                        <p>{msg.content}</p>
+                        {msg.role === 'assistant' ? (
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                        ) : (
+                          <p>{msg.content}</p>
+                        )}
                       </div>
                     ))}
                   </div>
