@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Démo - Intégration Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+        
+        .intro {
+            color: #666;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .demo-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .demo-section h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        
+        .instructions h3 {
+            color: #1976d2;
+            margin-bottom: 0.5rem;
+        }
+        
+        .instructions ol {
+            margin-left: 1.5rem;
+            color: #555;
+        }
+        
+        .instructions li {
+            margin: 0.5rem 0;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        
+        .note strong {
+            color: #f57c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Démo - Intégration du Chatbot</h1>
+        <p class="intro">
+            Cette page démontre comment intégrer votre chatbot sur n'importe quel site web.
+            Le widget s'affiche automatiquement en bas à droite de la page.
+        </p>
+
+        <div class="demo-section">
+            <h2>📝 Comment intégrer le chatbot sur votre site ?</h2>
+            
+            <div class="instructions">
+                <h3>Méthode 1 : Code iframe (Simple)</h3>
+                <ol>
+                    <li>Copiez le code d'intégration depuis votre dashboard</li>
+                    <li>Collez-le dans votre page HTML où vous voulez que le chatbot apparaisse</li>
+                    <li>C'est tout ! Le chatbot sera visible immédiatement</li>
+                </ol>
+            </div>
+
+            <div class="code-block">
+&lt;!-- Remplacez VOTRE_TOKEN par votre vrai token --&gt;
+&lt;iframe 
+    src="http://localhost:5173/widget/VOTRE_TOKEN" 
+    width="100%" 
+    height="600" 
+    frameborder="0" 
+    style="border-radius: 10px;"&gt;
+&lt;/iframe&gt;
+            </div>
+
+            <div class="note">
+                <strong>💡 Note :</strong> Pour un widget flottant (comme sur cette page), 
+                l'iframe s'intègre automatiquement en bas à droite. Pour l'intégrer dans 
+                votre contenu, modifiez les dimensions selon vos besoins.
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎯 Options d'intégration</h2>
+            <p><strong>Lien page complète :</strong> Redirige vers une page dédiée au chatbot</p>
+            <p><strong>Lien widget :</strong> Widget flottant intégrable via iframe</p>
+            <p><strong>Code embed :</strong> Code HTML prêt à copier-coller</p>
+        </div>
+
+        <div class="demo-section">
+            <h2>✨ Fonctionnalités du widget</h2>
+            <ul style="color: #666; line-height: 2; margin-left: 1.5rem;">
+                <li>✅ Bouton flottant discret</li>
+                <li>✅ Fenêtre de chat élégante</li>
+                <li>✅ Réponses en temps réel (streaming)</li>
+                <li>✅ Affichage des sources</li>
+                <li>✅ Responsive (mobile & desktop)</li>
+                <li>✅ Aucune authentification requise</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- EXEMPLE D'INTÉGRATION DU WIDGET -->
+    <!-- Remplacez VOTRE_TOKEN par votre vrai token de partage -->
+    <!--
+    <iframe 
+        src="http://localhost:5173/widget/VOTRE_TOKEN" 
+        style="position: fixed; bottom: 20px; right: 20px; width: 400px; height: 600px; border: none; z-index: 9999;"
+    ></iframe>
+    -->
+
+</body>
+</html>

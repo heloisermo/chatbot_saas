@@ -133,6 +133,88 @@ function MesChatbots({ onChatbotSelect }) {
                   <span className="stat-label">Créé le</span>
                 </div>
               </div>
+
+              {chatbot.share_link && (
+                <div className="share-link-container">
+                  <label>🔗 Liens de partage:</label>
+                  
+                  {/* Lien page complète */}
+                  <div className="share-option">
+                    <span className="share-label">Page complète:</span>
+                    <div className="share-link-box">
+                      <input 
+                        type="text" 
+                        value={chatbot.share_link} 
+                        readOnly 
+                        className="share-link-input"
+                      />
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(chatbot.share_link)
+                          setMessage('✅ Lien page copié!')
+                          setTimeout(() => setMessage(''), 2000)
+                        }}
+                        className="copy-btn"
+                        title="Copier le lien"
+                      >
+                        📋
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Lien widget */}
+                  {chatbot.widget_link && (
+                    <div className="share-option">
+                      <span className="share-label">Widget (iframe):</span>
+                      <div className="share-link-box">
+                        <input 
+                          type="text" 
+                          value={chatbot.widget_link} 
+                          readOnly 
+                          className="share-link-input"
+                        />
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(chatbot.widget_link)
+                            setMessage('✅ Lien widget copié!')
+                            setTimeout(() => setMessage(''), 2000)
+                          }}
+                          className="copy-btn"
+                          title="Copier le lien widget"
+                        >
+                          📋
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Code d'intégration */}
+                  {chatbot.embed_code && (
+                    <div className="share-option">
+                      <span className="share-label">Code d'intégration:</span>
+                      <div className="share-link-box">
+                        <textarea 
+                          value={chatbot.embed_code} 
+                          readOnly 
+                          className="embed-code-input"
+                          rows="2"
+                        />
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(chatbot.embed_code)
+                            setMessage('✅ Code embed copié!')
+                            setTimeout(() => setMessage(''), 2000)
+                          }}
+                          className="copy-btn"
+                          title="Copier le code"
+                        >
+                          📋
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               
               <button 
                 onClick={() => onChatbotSelect(chatbot)}

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import Auth from './Auth'
 import Dashboard from './Dashboard'
+import PublicChatbot from './PublicChatbot'
+import ChatbotWidget from './ChatbotWidget'
 import './App.css'
 
 function App() {
@@ -9,8 +11,20 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [authLoading, setAuthLoading] = useState(true)
 
+  // Détecter si on est sur une URL publique de chatbot
+  const pathname = window.location.pathname
+  const isPublicChatbot = pathname.startsWith('/chat/')
+  const isWidget = pathname.startsWith('/widget/')
+  const shareToken = (isPublicChatbot || isWidget) ? pathname.split('/').pop() : null
+
   // Vérifier si l'utilisateur est déjà connecté au chargement
   useEffect(() => {
+    // Ne pas vérifier l'authentification pour les chatbots publics ou widgets
+    if (isPublicChatbot || isWidget) {
+      setAuthLoading(false)
+      return
+    }
+
     const checkAuth = async () => {
       const token = localStorage.getItem('token')
       
@@ -33,7 +47,7 @@ function App() {
     }
     
     checkAuth()
-  }, [])
+  }, [isPublicChatbot, isWidget])
 
   const handleLogin = (userData) => {
     setUser(userData)
@@ -53,6 +67,16 @@ function App() {
 
   const handleUserUpdate = (updatedUser) => {
     setUser(updatedUser)
+  }
+
+  // Si c'est un widget, afficher le widget embeddable
+  if (isWidget) {
+    return <ChatbotWidget shareToken={shareToken} />
+  }
+
+  // Si c'est un chatbot public, afficher directement la page publique
+  if (isPublicChatbot) {
+    return <PublicChatbot shareToken={shareToken} />
   }
 
   if (authLoading) {

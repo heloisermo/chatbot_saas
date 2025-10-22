@@ -17,6 +17,9 @@ class RAGConfig(BaseModel):
     upload_dir: str = "data/uploads"
     index_path: str = "data/faiss_index"
     
+    # URL du frontend
+    frontend_url: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    
     # Modèle d'embeddings
     embedding_model: str = os.getenv("RAG_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
     embedding_device: str = os.getenv("RAG_EMBEDDING_DEVICE", "cpu")  # "cpu" ou "cuda"
@@ -55,6 +58,10 @@ class Settings:
     @property
     def FAISS_INDEX_PATH(self):
         return self._config.index_path
+    
+    @property
+    def FRONTEND_URL(self):
+        return self._config.frontend_url
     
     @property
     def DEFAULT_SYSTEM_PROMPT(self):

@@ -43,6 +43,9 @@ class ChatbotResponse(BaseModel):
     system_prompt: Optional[str] = None
     user_id: str
     documents: List[DocumentInfo] = []
+    share_link: Optional[str] = None
+    widget_link: Optional[str] = None
+    embed_code: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
