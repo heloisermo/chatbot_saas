@@ -10,6 +10,10 @@ export default defineConfig({
       usePolling: true
     },
     proxy: {
+      '/auth': {
+        target: process.env.VITE_API_URL || 'http://localhost:8000',
+        changeOrigin: true
+      },
       '/documents': {
         target: process.env.VITE_API_URL || 'http://localhost:8000',
         changeOrigin: true

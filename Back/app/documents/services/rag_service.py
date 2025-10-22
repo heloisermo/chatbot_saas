@@ -3,8 +3,8 @@ Service RAG - Retrieval Augmented Generation
 """
 from typing import List, Dict
 
-from app.services.document_indexer import DocumentIndexer
-from app.services.mistral_service import MistralService
+from app.documents.services.document_indexer import DocumentIndexer
+from app.documents.services.mistral_service import MistralService
 
 
 class RAGService:

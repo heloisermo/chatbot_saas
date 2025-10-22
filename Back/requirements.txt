@@ -4,14 +4,19 @@ sqlalchemy
 psycopg2-binary
 pydantic
 passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+# MongoDB
+motor
+pymongo
 # RAG Dependencies
 langchain
 langchain-community
 faiss-cpu
 sentence-transformers
 pypdf
-python-multipart
 tiktoken
 # LLM
 langchain-mistralai
 mistralai
+python-dotenv

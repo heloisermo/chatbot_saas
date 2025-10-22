@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
+import Auth from './Auth'
 import './App.css'
 
 function App() {
+  const [user, setUser] = useState(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
+  
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -15,6 +20,84 @@ function App() {
   const [chatMessages, setChatMessages] = useState([])
   const [systemPrompt, setSystemPrompt] = useState('')
   const chatEndRef = useRef(null)
+
+  // Vérifier si l'utilisateur est déjà connecté au chargement
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token')
+      
+      if (token) {
+        try {
+          // Configurer axios pour inclure le token
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+          
+          const response = await axios.get('/auth/me')
+          setUser(response.data)
+          setIsAuthenticated(true)
+        } catch (error) {
+          // Token invalide ou expiré
+          localStorage.removeItem('token')
+          delete axios.defaults.headers.common['Authorization']
+        }
+      }
+      
+      setAuthLoading(false)
+    }
+    
+    checkAuth()
+  }, [])
+
+  const loadStats = async () => {
+    try {
+      const response = await axios.get('/documents/stats')
+      setStats(response.data)
+    } catch (error) {
+      console.error('Erreur lors du chargement des stats:', error)
+    }
+  }
+
+  // Charger les stats quand l'utilisateur est authentifié
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadStats()
+    }
+  }, [isAuthenticated])
+
+  // Scroll automatique dans le chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages])
+
+  const handleLogin = (userData) => {
+    setUser(userData)
+    setIsAuthenticated(true)
+    
+    // Configurer axios avec le token
+    const token = localStorage.getItem('token')
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    delete axios.defaults.headers.common['Authorization']
+    setUser(null)
+    setIsAuthenticated(false)
+    setChatMessages([])
+  }
+
+  if (authLoading) {
+    return (
+      <div className="container">
+        <div className="card">
+          <h1>Chargement...</h1>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return <Auth onLogin={handleLogin} />
+  }
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0])
@@ -116,28 +199,18 @@ function App() {
     }
   }
 
-  const loadStats = async () => {
-    try {
-      const response = await axios.get('/documents/stats')
-      setStats(response.data)
-    } catch (error) {
-      console.error('Erreur lors du chargement des stats:', error)
-    }
-  }
-
-  useEffect(() => {
-    loadStats()
-  }, [])
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [chatMessages])
-
   return (
     <div className="container">
       <div className="card">
-        <h1>📚 RAG Chatbot</h1>
-        <p className="subtitle">Uploadez des documents et posez vos questions</p>
+        <div className="header-with-logout">
+          <div>
+            <h1>📚 RAG Chatbot</h1>
+            <p className="subtitle">Bienvenue {user.prenom} {user.nom}</p>
+          </div>
+          <button onClick={handleLogout} className="logout-btn">
+            🚪 Déconnexion
+          </button>
+        </div>
 
         <div className="tabs">
           <button 

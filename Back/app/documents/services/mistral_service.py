@@ -5,7 +5,7 @@ from typing import List, Dict
 from langchain_mistralai import ChatMistralAI
 from langchain_core.prompts import PromptTemplate
 
-from app.config import config
+from app.core.config import config
 
 
 class MistralService:

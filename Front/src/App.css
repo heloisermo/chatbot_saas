@@ -29,13 +29,44 @@ h1 {
   font-size: 32px;
   color: #333;
   margin-bottom: 10px;
-  text-align: center;
+}
+
+.header-with-logout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.header-with-logout h1 {
+  text-align: left;
+  margin-bottom: 5px;
+}
+
+.logout-btn {
+  padding: 10px 20px;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.logout-btn:hover {
+  background: #ff5252;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
 }
 
 .subtitle {
   color: #666;
-  text-align: center;
-  margin-bottom: 30px;
+  text-align: left;
+  margin-bottom: 10px;
+  font-size: 14px;
 }
 
 .upload-section {
