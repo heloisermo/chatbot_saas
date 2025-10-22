@@ -64,9 +64,8 @@ function PublicChatbot({ shareToken }) {
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let answer = ''
-      let sources = []
 
-      const assistantMessage = { role: 'assistant', content: '', sources: [] }
+      const assistantMessage = { role: 'assistant', content: '' }
       setMessages(prev => [...prev, assistantMessage])
 
       while (true) {
@@ -91,13 +90,6 @@ function PublicChatbot({ shareToken }) {
                 setMessages(prev => {
                   const newMessages = [...prev]
                   newMessages[newMessages.length - 1].content = answer
-                  return newMessages
-                })
-              } else if (parsed.type === 'sources') {
-                sources = parsed.sources
-                setMessages(prev => {
-                  const newMessages = [...prev]
-                  newMessages[newMessages.length - 1].sources = sources
                   return newMessages
                 })
               } else if (parsed.type === 'error') {
@@ -171,40 +163,26 @@ function PublicChatbot({ shareToken }) {
                 <div className="message-content">
                   <div className="message-text">
                     {msg.role === 'assistant' ? (
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {msg.content}
-                      </ReactMarkdown>
+                      msg.content ? (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      ) : (
+                        isAsking && index === messages.length - 1 && (
+                          <div className="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
+                        )
+                      )
                     ) : (
                       msg.content
                     )}
                   </div>
-                  {msg.sources && msg.sources.length > 0 && (
-                    <div className="message-sources">
-                      <strong>📚 Sources:</strong>
-                      <ul>
-                        {msg.sources.map((source, idx) => (
-                          <li key={idx}>
-                            {source.metadata?.filename || source.filename} - Page {source.metadata?.page || source.page || 'N/A'}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
                 </div>
               </div>
             ))
-          )}
-          {isAsking && (
-            <div className="message assistant typing">
-              <div className="message-avatar">🤖</div>
-              <div className="message-content">
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
-            </div>
           )}
         </div>
 

@@ -126,7 +126,17 @@ function MesChatbots({ onChatbotSelect }) {
                   <span className="stat-label">Documents</span>
                 </div>
                 <div className="stat">
-                  <span className="stat-icon">📅</span>
+                  <span className="stat-icon">🪙</span>
+                  <span className="stat-value">{chatbot.total_tokens?.toLocaleString() || 0}</span>
+                  <span className="stat-label">Tokens</span>
+                </div>
+                <div className="stat">
+                  <span className="stat-icon">�</span>
+                  <span className="stat-value">${(chatbot.estimated_cost || 0).toFixed(4)}</span>
+                  <span className="stat-label">Coût estimé</span>
+                </div>
+                <div className="stat">
+                  <span className="stat-icon">�📅</span>
                   <span className="stat-value">
                     {new Date(chatbot.created_at).toLocaleDateString('fr-FR')}
                   </span>

@@ -1,7 +1,7 @@
 """
 Service RAG - Retrieval Augmented Generation
 """
-from typing import List, Dict, Iterator, Tuple
+from typing import List, Dict, Iterator, Tuple, Optional
 
 from app.documents.services.document_indexer import DocumentIndexer
 from app.documents.services.mistral_service import MistralService
@@ -100,7 +100,7 @@ class RAGService:
         # Utiliser la méthode query standard
         return self.query(last_question, k=k)
     
-    def query_stream(self, question: str, k: int = 4, system_prompt: str = None, conversation_history: List[Dict] = None) -> Tuple[Iterator[str], List[Dict]]:
+    def query_stream(self, question: str, k: int = 4, system_prompt: str = None, conversation_history: List[Dict] = None):
         """
         Effectue une requête RAG avec streaming de la réponse
         
@@ -111,14 +111,15 @@ class RAGService:
             conversation_history: Historique de conversation (optionnel) - Liste de {role, content}
             
         Returns:
-            Tuple (Iterator de chunks de réponse, Liste des sources)
+            Tuple (Iterator de chunks de réponse, Liste des sources, Usage container)
+            Le usage_container sera rempli après la fin du stream
         """
         sources = []
         
         if self.indexer.vector_store is None:
             def empty_stream():
                 yield "Aucun document n'a été indexé. Veuillez d'abord uploader des documents."
-            return empty_stream(), sources
+            return empty_stream(), sources, {}
         
         # Récupérer les documents pertinents
         docs_with_scores = self.indexer.search(question, k=k)
@@ -127,7 +128,7 @@ class RAGService:
         if not docs_with_scores:
             def no_docs_stream():
                 yield "Je n'ai pas trouvé d'informations pertinentes dans les documents indexés."
-            return no_docs_stream(), sources
+            return no_docs_stream(), sources, {}
         
         # Préparer le contexte des documents
         context = "\n\n".join([
@@ -145,11 +146,11 @@ class RAGService:
             })
         
         # Stream la réponse du LLM via Mistral avec l'historique
-        response_stream = self.mistral.generate_response_stream(
+        response_stream, usage_container = self.mistral.generate_response_stream(
             context, 
             question, 
             system_prompt=system_prompt,
             conversation_history=conversation_history
         )
         
-        return response_stream, sources
+        return response_stream, sources, usage_container

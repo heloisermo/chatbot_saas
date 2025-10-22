@@ -46,6 +46,10 @@ class ChatbotResponse(BaseModel):
     share_link: Optional[str] = None
     widget_link: Optional[str] = None
     embed_code: Optional[str] = None
+    total_prompt_tokens: int = 0
+    total_completion_tokens: int = 0
+    total_tokens: int = 0
+    estimated_cost: float = 0.0  # Coût estimé en dollars
     created_at: datetime
     updated_at: datetime
 

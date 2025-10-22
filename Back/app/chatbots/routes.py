@@ -19,6 +19,7 @@ from app.core.mongodb import chatbots_collection, conversations_collection
 from app.documents.services.document_indexer import DocumentIndexer
 from app.documents.services.rag_service import RAGService
 from app.core.config import settings
+from app.core.cost_calculator import calculate_cost
 import os
 
 router = APIRouter(prefix="/chatbots", tags=["chatbots"])
@@ -42,6 +43,9 @@ async def create_chatbot(
         "user_id": str(current_user["_id"]),
         "share_token": share_token,
         "documents": [],
+        "total_prompt_tokens": 0,
+        "total_completion_tokens": 0,
+        "total_tokens": 0,
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()
     }
@@ -57,6 +61,11 @@ async def create_chatbot(
     # Générer le code d'intégration iframe
     embed_code = f'<iframe src="{widget_link}" width="100%" height="600" frameborder="0" style="border-radius: 10px;"></iframe>'
     
+    # Calculer le coût estimé
+    prompt_tokens = created_chatbot.get("total_prompt_tokens", 0)
+    completion_tokens = created_chatbot.get("total_completion_tokens", 0)
+    estimated_cost = calculate_cost(prompt_tokens, completion_tokens)
+    
     return ChatbotResponse(
         id=str(created_chatbot["_id"]),
         name=created_chatbot["name"],
@@ -66,6 +75,10 @@ async def create_chatbot(
         share_link=share_link,
         widget_link=widget_link,
         embed_code=embed_code,
+        total_prompt_tokens=prompt_tokens,
+        total_completion_tokens=completion_tokens,
+        total_tokens=created_chatbot.get("total_tokens", 0),
+        estimated_cost=estimated_cost,
         documents=[],
         created_at=created_chatbot["created_at"],
         updated_at=created_chatbot["updated_at"]
@@ -102,6 +115,11 @@ async def list_chatbots(current_user: dict = Depends(get_current_user)):
             widget_link = f"{base_url}/widget/{chatbot['share_token']}"
             embed_code = f'<iframe src="{widget_link}" width="100%" height="600" frameborder="0" style="border-radius: 10px;"></iframe>'
         
+        # Calculer le coût estimé
+        prompt_tokens = chatbot.get("total_prompt_tokens", 0)
+        completion_tokens = chatbot.get("total_completion_tokens", 0)
+        estimated_cost = calculate_cost(prompt_tokens, completion_tokens)
+        
         result.append(ChatbotResponse(
             id=str(chatbot["_id"]),
             name=chatbot["name"],
@@ -111,6 +129,10 @@ async def list_chatbots(current_user: dict = Depends(get_current_user)):
             share_link=share_link,
             widget_link=widget_link,
             embed_code=embed_code,
+            total_prompt_tokens=prompt_tokens,
+            total_completion_tokens=completion_tokens,
+            total_tokens=chatbot.get("total_tokens", 0),
+            estimated_cost=estimated_cost,
             documents=documents,
             created_at=chatbot["created_at"],
             updated_at=chatbot["updated_at"]
@@ -163,6 +185,11 @@ async def get_chatbot(
         widget_link = f"{base_url}/widget/{chatbot['share_token']}"
         embed_code = f'<iframe src="{widget_link}" width="100%" height="600" frameborder="0" style="border-radius: 10px;"></iframe>'
     
+    # Calculer le coût estimé
+    prompt_tokens = chatbot.get("total_prompt_tokens", 0)
+    completion_tokens = chatbot.get("total_completion_tokens", 0)
+    estimated_cost = calculate_cost(prompt_tokens, completion_tokens)
+    
     return ChatbotResponse(
         id=str(chatbot["_id"]),
         name=chatbot["name"],
@@ -172,6 +199,10 @@ async def get_chatbot(
         share_link=share_link,
         widget_link=widget_link,
         embed_code=embed_code,
+        total_prompt_tokens=prompt_tokens,
+        total_completion_tokens=completion_tokens,
+        total_tokens=chatbot.get("total_tokens", 0),
+        estimated_cost=estimated_cost,
         documents=documents,
         created_at=chatbot["created_at"],
         updated_at=chatbot["updated_at"]
@@ -229,12 +260,34 @@ async def update_chatbot(
         for doc in updated_chatbot.get("documents", [])
     ]
     
+    # Générer les liens de partage
+    base_url = settings.FRONTEND_URL or "http://localhost:5173"
+    share_link = None
+    widget_link = None
+    embed_code = None
+    if updated_chatbot.get("share_token"):
+        share_link = f"{base_url}/chat/{updated_chatbot['share_token']}"
+        widget_link = f"{base_url}/widget/{updated_chatbot['share_token']}"
+        embed_code = f'<iframe src="{widget_link}" width="100%" height="600" frameborder="0" style="border-radius: 10px;"></iframe>'
+    
+    # Calculer le coût estimé
+    prompt_tokens = updated_chatbot.get("total_prompt_tokens", 0)
+    completion_tokens = updated_chatbot.get("total_completion_tokens", 0)
+    estimated_cost = calculate_cost(prompt_tokens, completion_tokens)
+    
     return ChatbotResponse(
         id=str(updated_chatbot["_id"]),
         name=updated_chatbot["name"],
         description=updated_chatbot.get("description"),
         system_prompt=updated_chatbot.get("system_prompt"),
         user_id=updated_chatbot["user_id"],
+        share_link=share_link,
+        widget_link=widget_link,
+        embed_code=embed_code,
+        total_prompt_tokens=prompt_tokens,
+        total_completion_tokens=completion_tokens,
+        total_tokens=updated_chatbot.get("total_tokens", 0),
+        estimated_cost=estimated_cost,
         documents=documents,
         created_at=updated_chatbot["created_at"],
         updated_at=updated_chatbot["updated_at"]
@@ -350,12 +403,34 @@ async def upload_document_to_chatbot(
         for doc in updated_chatbot.get("documents", [])
     ]
     
+    # Générer les liens de partage
+    base_url = settings.FRONTEND_URL or "http://localhost:5173"
+    share_link = None
+    widget_link = None
+    embed_code = None
+    if updated_chatbot.get("share_token"):
+        share_link = f"{base_url}/chat/{updated_chatbot['share_token']}"
+        widget_link = f"{base_url}/widget/{updated_chatbot['share_token']}"
+        embed_code = f'<iframe src="{widget_link}" width="100%" height="600" frameborder="0" style="border-radius: 10px;"></iframe>'
+    
+    # Calculer le coût estimé
+    prompt_tokens = updated_chatbot.get("total_prompt_tokens", 0)
+    completion_tokens = updated_chatbot.get("total_completion_tokens", 0)
+    estimated_cost = calculate_cost(prompt_tokens, completion_tokens)
+    
     return ChatbotResponse(
         id=str(updated_chatbot["_id"]),
         name=updated_chatbot["name"],
         description=updated_chatbot.get("description"),
         system_prompt=updated_chatbot.get("system_prompt"),
         user_id=updated_chatbot["user_id"],
+        share_link=share_link,
+        widget_link=widget_link,
+        embed_code=embed_code,
+        total_prompt_tokens=prompt_tokens,
+        total_completion_tokens=completion_tokens,
+        total_tokens=updated_chatbot.get("total_tokens", 0),
+        estimated_cost=estimated_cost,
         documents=documents,
         created_at=updated_chatbot["created_at"],
         updated_at=updated_chatbot["updated_at"]
@@ -475,18 +550,15 @@ async def query_chatbot_stream(
     async def event_generator():
         full_answer = ""
         
-        # Obtenir le stream et les sources
-        response_stream, sources = rag_service.query_stream(
+        # Obtenir le stream, les sources et le container pour les usage stats
+        response_stream, sources, usage_container = rag_service.query_stream(
             query_data.question,
             k=query_data.k,
             system_prompt=chatbot.get("system_prompt"),
             conversation_history=query_data.conversation_history
         )
         
-        # Envoyer d'abord les sources
-        yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
-        
-        # Stream la réponse
+        # Stream la réponse directement (sans envoyer les sources)
         try:
             for chunk in response_stream:
                 if chunk:
@@ -497,6 +569,24 @@ async def query_chatbot_stream(
         
         # Envoyer un message de fin
         yield f"data: {json.dumps({'type': 'done'})}\n\n"
+        
+        # Maintenant usage_container devrait être rempli par le stream
+        # Mettre à jour les compteurs du chatbot si on a les stats
+        if usage_container and 'total_tokens' in usage_container:
+            try:
+                await chatbots_collection.update_one(
+                    {"_id": ObjectId(chatbot_id)},
+                    {
+                        "$inc": {
+                            "total_prompt_tokens": usage_container.get('prompt_tokens', 0),
+                            "total_completion_tokens": usage_container.get('completion_tokens', 0),
+                            "total_tokens": usage_container.get('total_tokens', 0)
+                        }
+                    }
+                )
+                print(f"✅ Tokens mis à jour: {usage_container}")
+            except Exception as e:
+                print(f"❌ Erreur lors de la mise à jour des tokens: {e}")
         
         # Sauvegarder la conversation (en arrière-plan)
         try:
@@ -597,6 +687,13 @@ async def get_public_chatbot(share_token: str):
     # Générer le lien de partage
     base_url = settings.FRONTEND_URL or "http://localhost:5173"
     share_link = f"{base_url}/chat/{share_token}"
+    widget_link = f"{base_url}/widget/{share_token}"
+    embed_code = f'<iframe src="{widget_link}" width="100%" height="600" frameborder="0" style="border-radius: 10px;"></iframe>'
+    
+    # Calculer le coût estimé
+    prompt_tokens = chatbot.get("total_prompt_tokens", 0)
+    completion_tokens = chatbot.get("total_completion_tokens", 0)
+    estimated_cost = calculate_cost(prompt_tokens, completion_tokens)
     
     return ChatbotResponse(
         id=str(chatbot["_id"]),
@@ -605,6 +702,12 @@ async def get_public_chatbot(share_token: str):
         system_prompt=chatbot.get("system_prompt"),
         user_id=chatbot["user_id"],
         share_link=share_link,
+        widget_link=widget_link,
+        embed_code=embed_code,
+        total_prompt_tokens=prompt_tokens,
+        total_completion_tokens=completion_tokens,
+        total_tokens=chatbot.get("total_tokens", 0),
+        estimated_cost=estimated_cost,
         documents=documents,
         created_at=chatbot["created_at"],
         updated_at=chatbot["updated_at"]
@@ -645,8 +748,8 @@ async def query_public_chatbot(
             answer_chunks = []
             full_answer = ""
             
-            # Obtenir le stream et les sources
-            response_stream, sources = rag_service.query_stream(
+            # Obtenir le stream, les sources et le container pour les usage stats
+            response_stream, sources, usage_container = rag_service.query_stream(
                 query_request.question,
                 k=query_request.k,
                 system_prompt=chatbot.get("system_prompt"),
@@ -660,9 +763,26 @@ async def query_public_chatbot(
                     full_answer += chunk
                     yield f"data: {json.dumps({'type': 'answer', 'content': chunk})}\n\n"
             
-            # Envoyer les sources
-            yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
+            # Envoyer un message de fin (sans les sources)
             yield "data: [DONE]\n\n"
+            
+            # Maintenant usage_container devrait être rempli par le stream
+            # Mettre à jour les compteurs du chatbot si on a les stats
+            if usage_container and 'total_tokens' in usage_container:
+                try:
+                    await chatbots_collection.update_one(
+                        {"_id": ObjectId(chatbot_id)},
+                        {
+                            "$inc": {
+                                "total_prompt_tokens": usage_container.get('prompt_tokens', 0),
+                                "total_completion_tokens": usage_container.get('completion_tokens', 0),
+                                "total_tokens": usage_container.get('total_tokens', 0)
+                            }
+                        }
+                    )
+                    print(f"✅ Tokens mis à jour (public): {usage_container}")
+                except Exception as e:
+                    print(f"❌ Erreur lors de la mise à jour des tokens (public): {e}")
             
             # Sauvegarder la conversation (public - sans user_id)
             try:

@@ -101,7 +101,7 @@ function ChatbotDetail({ chatbot, onBack, onUpdate }) {
     setChatMessages(prev => [
       ...prev,
       { role: 'user', content: currentQuestion },
-      { role: 'assistant', content: '', sources: [] }
+      { role: 'assistant', content: '' }
     ])
 
     try {
@@ -152,18 +152,7 @@ function ChatbotDetail({ chatbot, onBack, onUpdate }) {
             try {
               const data = JSON.parse(line.substring(6))
 
-              if (data.type === 'sources') {
-                // Mettre à jour les sources
-                setChatMessages(prev => {
-                  const newMessages = [...prev]
-                  const lastIndex = newMessages.length - 1
-                  newMessages[lastIndex] = {
-                    ...newMessages[lastIndex],
-                    sources: data.sources
-                  }
-                  return newMessages
-                })
-              } else if (data.type === 'chunk') {
+              if (data.type === 'chunk') {
                 // ✅ Mettre à jour immédiatement avec chaque chunk
                 setChatMessages(prev => {
                   const newMessages = [...prev]
@@ -267,27 +256,26 @@ function ChatbotDetail({ chatbot, onBack, onUpdate }) {
                     <div key={idx} className={`chat-message ${msg.role} ${chatLoading && idx === chatMessages.length - 1 && msg.role === 'assistant' ? 'streaming' : ''}`}>
                       <div className="message-content">
                         {msg.role === 'assistant' ? (
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {msg.content}
-                          </ReactMarkdown>
+                          msg.content ? (
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {msg.content}
+                            </ReactMarkdown>
+                          ) : (
+                            chatLoading && idx === chatMessages.length - 1 && (
+                              <span className="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                              </span>
+                            )
+                          )
                         ) : (
                           msg.content
                         )}
-                        {chatLoading && idx === chatMessages.length - 1 && msg.role === 'assistant' && (
+                        {chatLoading && idx === chatMessages.length - 1 && msg.role === 'assistant' && msg.content && (
                           <span className="typing-cursor"></span>
                         )}
                       </div>
-                      {msg.sources && msg.sources.length > 0 && (
-                        <div className="sources">
-                          <p className="sources-title">📚 Sources:</p>
-                          {msg.sources.map((source, sidx) => (
-                            <div key={sidx} className="source-item">
-                              <span className="source-score">Score: {source.score.toFixed(3)}</span>
-                              <span className="source-text">{source.content}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   ))}
 
@@ -349,6 +337,29 @@ function ChatbotDetail({ chatbot, onBack, onUpdate }) {
                   {uploadMessage}
                 </div>
               )}
+            </div>
+
+            <div className="token-stats-card">
+              <h3>🪙 Consommation de tokens</h3>
+              <div className="token-stats-grid">
+                <div className="token-stat">
+                  <span className="token-stat-label">Tokens prompt</span>
+                  <span className="token-stat-value">{(chatbot.total_prompt_tokens || 0).toLocaleString()}</span>
+                </div>
+                <div className="token-stat">
+                  <span className="token-stat-label">Tokens réponse</span>
+                  <span className="token-stat-value">{(chatbot.total_completion_tokens || 0).toLocaleString()}</span>
+                </div>
+                <div className="token-stat total">
+                  <span className="token-stat-label">Total</span>
+                  <span className="token-stat-value">{(chatbot.total_tokens || 0).toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="cost-display">
+                <span className="cost-label">💰 Coût estimé (Mistral Small):</span>
+                <span className="cost-value">${(chatbot.estimated_cost || 0).toFixed(6)}</span>
+                <span className="cost-detail">($0.1/M input, $0.3/M output)</span>
+              </div>
             </div>
 
             <div className="documents-list">

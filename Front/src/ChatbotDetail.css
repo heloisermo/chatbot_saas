@@ -332,10 +332,92 @@
 }
 
 .upload-card,
-.documents-list {
+.documents-list,
+.token-stats-card {
   background: #f9f9f9;
   border-radius: 8px;
   padding: 1.5rem;
+}
+
+.token-stats-card {
+  margin-bottom: 2rem;
+}
+
+.token-stats-card h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.token-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.token-stat {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.token-stat.total {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.token-stat-label {
+  display: block;
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.token-stat.total .token-stat-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.token-stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.token-stat.total .token-stat-value {
+  color: white;
+}
+
+.cost-display {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.cost-label {
+  display: block;
+  font-size: 0.875rem;
+  color: #2d3436;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.cost-value {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #2d3436;
+  margin-bottom: 0.25rem;
+}
+
+.cost-detail {
+  display: block;
+  font-size: 0.75rem;
+  color: #636e72;
 }
 
 .upload-card h3,

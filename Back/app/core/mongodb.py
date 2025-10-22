@@ -19,6 +19,7 @@ database = client[DATABASE_NAME]
 users_collection = database.get_collection("users")
 chatbots_collection = database.get_collection("chatbots")
 conversations_collection = database.get_collection("conversations")
+usage_collection = database.get_collection("usage_metrics")
 
 
 async def connect_to_mongo():

@@ -152,9 +152,17 @@ function ChatbotWidget({ shareToken }) {
                   </div>
                   <div className="widget-message-bubble">
                     {msg.role === 'assistant' ? (
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {msg.content}
-                      </ReactMarkdown>
+                      msg.content ? (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      ) : (
+                        isAsking && index === messages.length - 1 && (
+                          <div className="widget-typing">
+                            <span></span><span></span><span></span>
+                          </div>
+                        )
+                      )
                     ) : (
                       msg.content
                     )}
@@ -162,7 +170,7 @@ function ChatbotWidget({ shareToken }) {
                 </div>
               ))
             )}
-            {isAsking && (
+            {isAsking && messages.length === 0 && (
               <div className="widget-message assistant">
                 <div className="widget-message-avatar">🤖</div>
                 <div className="widget-message-bubble">
