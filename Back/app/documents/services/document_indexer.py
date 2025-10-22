@@ -17,6 +17,7 @@ class DocumentIndexer:
     
     def __init__(
         self, 
+        chatbot_id: str = None,
         index_path: str = "data/faiss_index",
         embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     ):
@@ -24,14 +25,20 @@ class DocumentIndexer:
         Initialise l'indexeur de documents
         
         Args:
-            index_path: Chemin où sauvegarder l'index FAISS
+            chatbot_id: ID du chatbot (pour des index séparés par chatbot)
+            index_path: Chemin de base où sauvegarder l'index FAISS
             embedding_model: Modèle d'embeddings à utiliser
         """
-        self.index_path = index_path
+        # Si un chatbot_id est fourni, créer un index spécifique
+        if chatbot_id:
+            self.index_path = os.path.join(index_path, chatbot_id)
+        else:
+            self.index_path = index_path
+            
         self.embedding_model = embedding_model
         
         # Créer le dossier si nécessaire
-        os.makedirs(os.path.dirname(index_path), exist_ok=True)
+        os.makedirs(self.index_path, exist_ok=True)
         
         # Initialiser les embeddings
         self.embeddings = HuggingFaceEmbeddings(
@@ -45,7 +52,8 @@ class DocumentIndexer:
         
     def _load_or_create_index(self) -> Optional[FAISS]:
         """Charge l'index FAISS existant ou retourne None"""
-        if os.path.exists(self.index_path):
+        index_file = os.path.join(self.index_path, "index.faiss")
+        if os.path.exists(index_file):
             try:
                 return FAISS.load_local(
                     self.index_path, 

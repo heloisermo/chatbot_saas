@@ -14,18 +14,23 @@ from app.core.config import config
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
+# ANCIEN CODE - Désactivé car maintenant géré par chatbot
 # Instance globale de l'indexeur
-indexer = DocumentIndexer(
-    index_path=config.index_path,
-    embedding_model=config.embedding_model
-)
+# indexer = DocumentIndexer(
+#     index_path=config.index_path,
+#     embedding_model=config.embedding_model
+# )
 
 # Instance globale du service RAG
-try:
-    rag_service = RAGService(indexer)
-except ValueError as e:
-    print(f"⚠️  Service RAG non initialisé: {e}")
-    rag_service = None
+# try:
+#     rag_service = RAGService(indexer)
+# except ValueError as e:
+#     print(f"⚠️  Service RAG non initialisé: {e}")
+#     rag_service = None
+
+# Pour la compatibilité, on crée des instances par défaut (None)
+indexer = None
+rag_service = None
 
 
 @router.post("/upload")

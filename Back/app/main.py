@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.auth import routes as auth_routes
 from app.documents import routes as documents_routes
+from app.chatbots import routes as chatbots_routes
 from app.core.mongodb import connect_to_mongo, close_mongo_connection
 
 app = FastAPI(title="RAG Chatbot API")
@@ -30,6 +31,7 @@ async def shutdown_event():
 
 app.include_router(auth_routes.router)
 app.include_router(documents_routes.router)
+app.include_router(chatbots_routes.router)
 
 
 @app.get("/")

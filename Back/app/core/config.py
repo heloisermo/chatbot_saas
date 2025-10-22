@@ -42,8 +42,44 @@ Si l'information n'est pas dans le contexte, dis-le clairement.
 Sois précis, concis et professionnel.""")
 
 
+# Alias pour compatibilité
+class Settings:
+    """Wrapper pour accéder facilement à la config"""
+    def __init__(self):
+        self._config = RAGConfig()
+    
+    @property
+    def UPLOAD_DIR(self):
+        return self._config.upload_dir
+    
+    @property
+    def FAISS_INDEX_PATH(self):
+        return self._config.index_path
+    
+    @property
+    def DEFAULT_SYSTEM_PROMPT(self):
+        return self._config.system_prompt
+    
+    @property
+    def MISTRAL_API_KEY(self):
+        return self._config.mistral_api_key
+    
+    @property
+    def MISTRAL_MODEL(self):
+        return self._config.mistral_model
+    
+    @property
+    def EMBEDDING_MODEL(self):
+        return self._config.embedding_model
+    
+    @property
+    def EMBEDDING_DEVICE(self):
+        return self._config.embedding_device
+
+
 # Instance globale de configuration
 config = RAGConfig()
+settings = Settings()
 
 
 # Créer les dossiers nécessaires

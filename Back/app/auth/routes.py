@@ -4,7 +4,7 @@ Routes d'authentification avec MongoDB
 from fastapi import APIRouter, HTTPException, status, Depends
 from datetime import datetime
 
-from app.auth.schemas import UserRegister, UserLogin, Token, UserResponse
+from app.auth.schemas import UserRegister, UserLogin, Token, UserResponse, UserUpdate
 from app.auth.utils import get_password_hash, verify_password, create_access_token, get_current_user
 from app.core.mongodb import users_collection
 
@@ -90,4 +90,47 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
         nom=current_user["nom"],
         email=current_user["email"],
         created_at=current_user["created_at"]
+    )
+
+
+@router.put("/me", response_model=UserResponse)
+async def update_current_user(
+    user_data: UserUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Met à jour les informations de l'utilisateur connecté
+    """
+    update_data = {"updated_at": datetime.utcnow()}
+    
+    if user_data.prenom:
+        update_data["prenom"] = user_data.prenom
+    if user_data.nom:
+        update_data["nom"] = user_data.nom
+    if user_data.email:
+        # Vérifier si l'email n'est pas déjà utilisé par un autre utilisateur
+        existing_user = await users_collection.find_one({
+            "email": user_data.email,
+            "_id": {"$ne": current_user["_id"]}
+        })
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cet email est déjà utilisé"
+            )
+        update_data["email"] = user_data.email
+    
+    await users_collection.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": update_data}
+    )
+    
+    updated_user = await users_collection.find_one({"_id": current_user["_id"]})
+    
+    return UserResponse(
+        id=str(updated_user["_id"]),
+        prenom=updated_user["prenom"],
+        nom=updated_user["nom"],
+        email=updated_user["email"],
+        created_at=updated_user["created_at"]
     )

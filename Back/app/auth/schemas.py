@@ -34,6 +34,13 @@ class UserInDB(BaseModel):
         populate_by_name = True
 
 
+class UserUpdate(BaseModel):
+    """Schéma pour mettre à jour un utilisateur"""
+    prenom: Optional[str] = Field(None, min_length=2, max_length=50)
+    nom: Optional[str] = Field(None, min_length=2, max_length=50)
+    email: Optional[EmailStr] = None
+
+
 class UserResponse(BaseModel):
     """Schéma pour la réponse utilisateur (sans mot de passe)"""
     id: str

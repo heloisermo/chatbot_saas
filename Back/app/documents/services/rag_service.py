@@ -1,7 +1,7 @@
 """
 Service RAG - Retrieval Augmented Generation
 """
-from typing import List, Dict
+from typing import List, Dict, Iterator, Tuple
 
 from app.documents.services.document_indexer import DocumentIndexer
 from app.documents.services.mistral_service import MistralService
@@ -10,15 +10,19 @@ from app.documents.services.mistral_service import MistralService
 class RAGService:
     """Service pour les requêtes RAG (Retrieval + Generation)"""
     
-    def __init__(self, indexer: DocumentIndexer):
+    def __init__(self, chatbot_id: str = None):
         """
         Initialise le service RAG
         
         Args:
-            indexer: Instance du DocumentIndexer
+            chatbot_id: ID du chatbot pour un index spécifique
         """
-        self.indexer = indexer
+        self.indexer = DocumentIndexer(chatbot_id=chatbot_id)
         self.mistral = MistralService()
+    
+    def index_exists(self) -> bool:
+        """Vérifie si un index existe pour ce chatbot"""
+        return self.indexer.vector_store is not None
     
     def query(self, question: str, k: int = 4, system_prompt: str = None) -> Dict:
         """
@@ -40,17 +44,6 @@ class RAGService:
         
         # Récupérer les documents pertinents
         docs_with_scores = self.indexer.search(question, k=k)
-        
-        # LOG: Afficher ce qui a été trouvé
-        print("\n" + "="*80)
-        print(f"🔎 RECHERCHE DANS L'INDEX: '{question}'")
-        print(f"📊 Nombre de documents trouvés: {len(docs_with_scores)}")
-        print("="*80)
-        for i, (doc, score) in enumerate(docs_with_scores):
-            print(f"\nDocument {i+1} (score: {score:.4f}):")
-            print(f"Contenu: {doc.page_content[:200]}...")
-            print(f"Métadonnées: {doc.metadata}")
-        print("="*80 + "\n")
         
         if not docs_with_scores:
             return {
@@ -106,3 +99,51 @@ class RAGService:
         
         # Utiliser la méthode query standard
         return self.query(last_question, k=k)
+    
+    def query_stream(self, question: str, k: int = 4, system_prompt: str = None) -> Tuple[Iterator[str], List[Dict]]:
+        """
+        Effectue une requête RAG avec streaming de la réponse
+        
+        Args:
+            question: Question de l'utilisateur
+            k: Nombre de documents à récupérer
+            system_prompt: Prompt système personnalisé (optionnel)
+            
+        Returns:
+            Tuple (Iterator de chunks de réponse, Liste des sources)
+        """
+        sources = []
+        
+        if self.indexer.vector_store is None:
+            def empty_stream():
+                yield "Aucun document n'a été indexé. Veuillez d'abord uploader des documents."
+            return empty_stream(), sources
+        
+        # Récupérer les documents pertinents
+        docs_with_scores = self.indexer.search(question, k=k)
+        
+        
+        if not docs_with_scores:
+            def no_docs_stream():
+                yield "Je n'ai pas trouvé d'informations pertinentes dans les documents indexés."
+            return no_docs_stream(), sources
+        
+        # Préparer le contexte
+        context = "\n\n".join([
+            f"Document {i+1}:\n{doc.page_content}" 
+            for i, (doc, _) in enumerate(docs_with_scores)
+        ])
+        
+        # Préparer les sources
+        for i, (doc, score) in enumerate(docs_with_scores):
+            sources.append({
+                "content": doc.page_content[:200] + "...",
+                "metadata": doc.metadata,
+                "score": float(score),
+                "index": i + 1
+            })
+        
+        # Stream la réponse du LLM via Mistral
+        response_stream = self.mistral.generate_response_stream(context, question, system_prompt=system_prompt)
+        
+        return response_stream, sources
